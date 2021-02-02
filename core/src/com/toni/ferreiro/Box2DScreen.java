@@ -31,7 +31,7 @@ public class Box2DScreen extends BaseScreen{
     private Body player1Body, sueloBody, pinchoBody;
     private Fixture player1Fixture, sueloFixture, pinchoFixture;
 
-    private boolean haColisionado;
+    private boolean debeSaltar, player1Saltando;
 
     @Override
     public void show() {
@@ -45,19 +45,34 @@ public class Box2DScreen extends BaseScreen{
             public void beginContact(Contact contact) {
                 Fixture fixtureA = contact.getFixtureA(), fixtureB = contact.getFixtureB();
                 if (fixtureA == player1Fixture && fixtureB == sueloFixture) {
+                    if (Gdx.input.isTouched()){
+                        debeSaltar = true;
+                    }
                     //no puedes hacer saltar();
-                    haColisionado = true;
+                    player1Saltando = false;
                 }
 
                 if (fixtureA == sueloFixture && fixtureB == player1Fixture) {
+                    if (Gdx.input.isTouched()){
+                        debeSaltar = true;
+                    }
                     //no puedes hacer saltar();
-                    haColisionado = true;
+                    player1Saltando = false;
                 }
             }
 
             @Override
             public void endContact(Contact contact) {
+                Fixture fixtureA = contact.getFixtureA(), fixtureB = contact.getFixtureB();
+                if (fixtureA == player1Fixture && fixtureB == sueloFixture) {
+                    //no puedes hacer saltar();
+                    player1Saltando = true;
+                }
 
+                if (fixtureA == sueloFixture && fixtureB == player1Fixture) {
+                    //no puedes hacer saltar();
+                    player1Saltando = true;
+                }
             }
 
             @Override
@@ -138,11 +153,16 @@ public class Box2DScreen extends BaseScreen{
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        if (Gdx.input.justTouched() || haColisionado){
-            haColisionado = false;
+        if (debeSaltar){
+            debeSaltar = false;
             saltar();
         }
-        world.step(delta, 6, 2);
+
+        if (Gdx.input.justTouched() && !player1Saltando){
+            debeSaltar = true;
+        }
+
+        world.step(delta, 6, 2); //6 y 2 por documentacion
 
         camera.update();
         renderer.render(world, camera.combined);
