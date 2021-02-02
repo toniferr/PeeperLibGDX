@@ -10,6 +10,7 @@ public class ActorPinchos extends Actor {
 
     public ActorPinchos(TextureRegion pinchos){
         this.pinchos = pinchos;
+        setSize(pinchos.getRegionWidth(), pinchos.getRegionHeight());
     }
 
     @Override
