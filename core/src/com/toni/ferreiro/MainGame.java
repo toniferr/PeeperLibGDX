@@ -12,6 +12,8 @@ public class MainGame extends ApplicationAdapter {
 	
 	@Override
 	public void create () {
+		Procesador p = new Procesador();
+		Gdx.input.setInputProcessor(p); //scene 2d ya nos proporciona esta llamada
 	}
 
 	@Override
@@ -23,12 +25,5 @@ public class MainGame extends ApplicationAdapter {
 		Gdx.gl.glClearColor(0.3f, 0.3f , 0.3f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		if (Gdx.input.justTouched()) {
-			System.out.println("Estas tocando la pantalla.");
-		}
-
-		if (Gdx.input.isKeyJustPressed(Input.Keys.F4)){
-			System.out.println("Estas tocando F4");
-		}
 	}
 }
