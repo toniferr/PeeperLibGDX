@@ -24,8 +24,8 @@ public class Box2DScreen extends BaseScreen{
 
     private OrthographicCamera camera;
 
-    private Body player1Body, sueloBody;
-    private Fixture player1Fixture, sueloFixture;
+    private Body player1Body, sueloBody, pinchoBody;
+    private Fixture player1Fixture, sueloFixture, pinchoFixture;
 
     @Override
     public void show() {
@@ -35,7 +35,8 @@ public class Box2DScreen extends BaseScreen{
         camera.translate(0,1); //mueve la camara 1 metro hacia abaja
 
         player1Body = world.createBody(createPlayerBodyDef());
-        sueloBody = world.createBody(createSuelobodyDef());
+        sueloBody = world.createBody(createSueloBodyDef());
+        pinchoBody = world.createBody(createPinchoBodyDef(0.5f));
 
         PolygonShape player1Shape = new PolygonShape(); //CircleShape si fuera un circulo
         player1Shape.setAsBox(0.5f, 0.5f); //lo que mide en metros (es la mitad)
@@ -47,12 +48,20 @@ public class Box2DScreen extends BaseScreen{
         sueloFixture = sueloBody.createFixture(sueloShape, 1);
         sueloShape.dispose();
 
+        pinchoFixture = createPinchoFixture(pinchoBody);
+
     }
 
-    private BodyDef createSuelobodyDef() {
+    private BodyDef createPinchoBodyDef(float x) {
+        BodyDef def = new BodyDef();
+        def.position.set(x, 0.5f);
+        return def;
+    }
+
+    private BodyDef createSueloBodyDef() {
         BodyDef def = new BodyDef();
         def.position.set(0, -1);
-        def.type = BodyDef.BodyType.StaticBody;
+        def.type = BodyDef.BodyType.StaticBody; //se puede omitir, por defecto es static
         return def;
     }
 
@@ -63,10 +72,26 @@ public class Box2DScreen extends BaseScreen{
         return def;
     }
 
+    private Fixture createPinchoFixture(Body pinchoBody) {
+        Vector2[] vertices = new Vector2[3]; //8 vertices máx.
+        vertices[0] = new Vector2(-0.5f, -0.5f);
+        vertices[1] = new Vector2(0.5f, -0.5f);
+        vertices[2] = new Vector2(0, 0.5f);
+        PolygonShape shape = new PolygonShape();
+        shape.set(vertices);
+        Fixture fix = pinchoBody.createFixture(shape, 1);
+        shape.dispose();
+        return fix;
+    }
+
     @Override
     public void dispose() {
+        sueloBody.destroyFixture(sueloFixture);
         player1Body.destroyFixture(player1Fixture);
+        pinchoBody.destroyFixture(pinchoFixture);
         world.destroyBody(player1Body); //no vale con dispose
+        world.destroyBody(sueloBody);
+        world.destroyBody(pinchoBody);
         world.dispose();
         renderer.dispose();
     }
