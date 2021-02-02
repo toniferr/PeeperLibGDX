@@ -7,8 +7,12 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.ContactImpulse;
+import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
@@ -27,6 +31,8 @@ public class Box2DScreen extends BaseScreen{
     private Body player1Body, sueloBody, pinchoBody;
     private Fixture player1Fixture, sueloFixture, pinchoFixture;
 
+    private boolean haColisionado;
+
     @Override
     public void show() {
         world = new World(new Vector2(0, -10), true); //en la tierra es -9.8, con true si está en reposos ya no actualiza
@@ -34,21 +40,53 @@ public class Box2DScreen extends BaseScreen{
         camera = new OrthographicCamera(4.11f, 4); //proporcion 16/9 con alto de 4 metros
         camera.translate(0,1); //mueve la camara 1 metro hacia abaja
 
+        world.setContactListener(new ContactListener() {
+            @Override
+            public void beginContact(Contact contact) {
+                Fixture fixtureA = contact.getFixtureA(), fixtureB = contact.getFixtureB();
+                if (fixtureA == player1Fixture && fixtureB == sueloFixture) {
+                    //no puedes hacer saltar();
+                    haColisionado = true;
+                }
+
+                if (fixtureA == sueloFixture && fixtureB == player1Fixture) {
+                    //no puedes hacer saltar();
+                    haColisionado = true;
+                }
+            }
+
+            @Override
+            public void endContact(Contact contact) {
+
+            }
+
+            @Override
+            public void preSolve(Contact contact, Manifold oldManifold) {
+
+            }
+
+            @Override
+            public void postSolve(Contact contact, ContactImpulse impulse) {
+
+            }
+        });
+
         player1Body = world.createBody(createPlayerBodyDef());
         sueloBody = world.createBody(createSueloBodyDef());
-        pinchoBody = world.createBody(createPinchoBodyDef(0.5f));
+//        pinchoBody = world.createBody(createPinchoBodyDef(0.5f));
 
         PolygonShape player1Shape = new PolygonShape(); //CircleShape si fuera un circulo
         player1Shape.setAsBox(0.5f, 0.5f); //lo que mide en metros (es la mitad)
-        player1Fixture = player1Body.createFixture(player1Shape, 1);
+        player1Fixture = player1Body.createFixture(player1Shape, 4);
         player1Shape.dispose();
 
         PolygonShape sueloShape = new PolygonShape();
         sueloShape.setAsBox(500,1);
         sueloFixture = sueloBody.createFixture(sueloShape, 1);
+        sueloFixture.setUserData("floor");
         sueloShape.dispose();
 
-        pinchoFixture = createPinchoFixture(pinchoBody);
+//        pinchoFixture = createPinchoFixture(pinchoBody);
 
     }
 
@@ -100,9 +138,18 @@ public class Box2DScreen extends BaseScreen{
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        if (Gdx.input.justTouched() || haColisionado){
+            haColisionado = false;
+            saltar();
+        }
         world.step(delta, 6, 2);
 
         camera.update();
         renderer.render(world, camera.combined);
+    }
+
+    private void saltar() {
+        Vector2 position = player1Body.getPosition();
+        player1Body.applyLinearImpulse(0,20, position.x, position.y, true);
     }
 }
