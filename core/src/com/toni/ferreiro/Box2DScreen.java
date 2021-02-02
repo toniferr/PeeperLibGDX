@@ -24,23 +24,36 @@ public class Box2DScreen extends BaseScreen{
 
     private OrthographicCamera camera;
 
-    private Body player1Body;
-    private Fixture player1Fixture;
+    private Body player1Body, sueloBody;
+    private Fixture player1Fixture, sueloFixture;
 
     @Override
     public void show() {
-        world = new World(new Vector2(0, -10), true); //en la tierra es -9.8
+        world = new World(new Vector2(0, -10), true); //en la tierra es -9.8, con true si está en reposos ya no actualiza
         renderer = new Box2DDebugRenderer();
-        camera = new OrthographicCamera(32, 18); //proporcion 16/9 con alto de 4 metros
+        camera = new OrthographicCamera(4.11f, 4); //proporcion 16/9 con alto de 4 metros
+        camera.translate(0,1); //mueve la camara 1 metro hacia abaja
 
-        BodyDef player1Def = createPlayerBodyDef();
-        player1Body = world.createBody(player1Def);
+        player1Body = world.createBody(createPlayerBodyDef());
+        sueloBody = world.createBody(createSuelobodyDef());
 
         PolygonShape player1Shape = new PolygonShape(); //CircleShape si fuera un circulo
-        player1Shape.setAsBox(1, 1); //lo que mide en metros
+        player1Shape.setAsBox(0.5f, 0.5f); //lo que mide en metros (es la mitad)
         player1Fixture = player1Body.createFixture(player1Shape, 1);
         player1Shape.dispose();
 
+        PolygonShape sueloShape = new PolygonShape();
+        sueloShape.setAsBox(500,1);
+        sueloFixture = sueloBody.createFixture(sueloShape, 1);
+        sueloShape.dispose();
+
+    }
+
+    private BodyDef createSuelobodyDef() {
+        BodyDef def = new BodyDef();
+        def.position.set(0, -1);
+        def.type = BodyDef.BodyType.StaticBody;
+        return def;
     }
 
     private BodyDef createPlayerBodyDef() {
@@ -52,6 +65,7 @@ public class Box2DScreen extends BaseScreen{
 
     @Override
     public void dispose() {
+        player1Body.destroyFixture(player1Fixture);
         world.destroyBody(player1Body); //no vale con dispose
         world.dispose();
         renderer.dispose();
