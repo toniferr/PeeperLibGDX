@@ -31,13 +31,13 @@ public class Box2DScreen extends BaseScreen{
     public void show() {
         world = new World(new Vector2(0, -10), true); //en la tierra es -9.8
         renderer = new Box2DDebugRenderer();
-        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera = new OrthographicCamera(32, 18); //proporcion 16/9 con alto de 4 metros
 
         BodyDef player1Def = createPlayerBodyDef();
         player1Body = world.createBody(player1Def);
 
         PolygonShape player1Shape = new PolygonShape(); //CircleShape si fuera un circulo
-        player1Shape.setAsBox(1, 1); //en metros
+        player1Shape.setAsBox(1, 1); //lo que mide en metros
         player1Fixture = player1Body.createFixture(player1Shape, 1);
         player1Shape.dispose();
 
